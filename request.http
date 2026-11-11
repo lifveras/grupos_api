@@ -1,0 +1,93 @@
+@baseUrl = http://localhost:5000
+# Copie e cole o access_token gerado no login aqui para testar as rotas protegidas
+@token =  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc5NDQwMzg3MiwianRpIjoiZWFkOGQwZTEtYzk1My00OWUwLWIwMjAtYTkwY2Y5NGI1NmFkIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3OTQ0MDM4NzIsImNzcmYiOiIwYTMyYzZlYy03NmVlLTQ1OTMtYjA1Yy0wYjEwMzdmYWE0MTgiLCJleHAiOjE3OTQ0MDQ3NzJ9.ZfY3xLZKZ1a3aph1Dc2glK2a1Matrjd_ZpaXllXSUN8
+
+
+POST {{baseUrl}}/usuario HTTP/1.1
+content-type: application/json
+
+{
+    "nome": "Usuario Convidado",
+    "email": "convidado@mail.com",
+    "senha": "umaSenha1234",
+    "telefones": [
+        {
+            "ddd": "11",
+            "numero": "99999-9999",
+            "tipo": "Celular",
+            "categoria": "Pessoal"
+        },
+        {
+            "ddd": "11",
+            "numero": "3333-3333",
+            "tipo": "Fixo",
+            "categoria": "Trabalho"
+        }
+    ],
+    "grupos_ids": [1, 2, 3, 5]
+}
+
+###
+
+POST {{baseUrl}}/usuario HTTP/1.1
+content-type: application/json
+
+{
+    "nome": "Usuario Inscrito",
+    "email": "inscrito@mail.com",
+    "senha": "outraSenha456",
+    "telefones": [
+        {
+            "ddd": "12",
+            "numero": "88888-8888",
+            "tipo": "Celular",
+            "categoria": "Empresa"
+        },
+        {
+            "ddd": "11",
+            "numero": "2222-2222",
+            "tipo": "Fixo",
+            "categoria": "Casa"
+        }
+    ],
+    "grupos_ids": [1, 2]
+}
+
+###
+
+### 3. Criar Usuário (Erro: Campos obrigatórios ausentes -> Esperado 400)
+POST {{baseUrl}}/usuario HTTP/1.1
+content-type: application/json
+
+{
+    "nome": "Usuario Incompleto",
+    "email": "incompleto@mail.com"
+}
+
+### 4. Realizar Login (Sucesso -> Copie o access_token retornado)
+POST {{baseUrl}}/login HTTP/1.1
+content-type: application/json
+Origin: http://dominio-falso.com
+
+{
+    "email": "convidado@mail.com",
+    "senha": "umaSenha1234"
+}
+
+### 5. Realizar Login (Erro: Senha Incorreta -> Esperado 401)
+POST {{baseUrl}}/login HTTP/1.1
+content-type: application/json
+
+{
+    "email": "convidado@mail.com",
+    "senha": "senhaErrada"
+}
+
+
+### 6. Listar Usuários (Rota Protegida com Token Válido)
+GET {{baseUrl}}/usuario HTTP/1.1
+Authorization: Bearer {{token}}
+Origin: http://dominio-falso.com
+
+### 7. Listar Usuários (Sem Autenticação -> Esperado 401 Unauthorized)
+GET {{baseUrl}}/usuario HTTP/1.1
